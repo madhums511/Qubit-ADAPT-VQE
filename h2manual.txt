@@ -1,0 +1,243 @@
+
+
+     Brief description of how to run the H_2 program H2MU01:
+     =======================================================
+
+             ( Alejandro Saenz, September 1998 )
+
+
+
+To perform a standard calculation of the energies of a diatomic 
+two-electron molecule one may use program H2MU01 started with 
+the C-shell script "h2mu01.csh".
+
+
+ 1.) Prepare an input file xxx.dat (usually in the ./input directory).
+     This input file is old-fashioned FORTRAN style, i.e. it is a 
+     formatted input file containing only numbers, often even without
+     any separating blanks. Therefore, one should usually not attempt
+     to prepare such an input file from scratch, but to copy another
+     input file and to modify it accordingly (see comments below).
+
+
+ 2.) Start the program by the command line:
+
+        "h2mu01.csh xxx"
+
+     (or "(nohup h2mu01.csh xxx &) >& xxx.log" )
+
+     where "xxx" stands for the name of the xxx.dat input file.
+
+     In order to be usable for other programs like the real or
+     complex scaling extensions, one should stick preferably to 
+     the following name rules:
+
+        xxx = SystemBasisRR1val_R2val   (e.g. h2b249v01bR1_40)
+
+     where
+            System = h2, heh, ...
+            Basis  = bYYY     (YYY being e.g. number of basis
+                               functions and some label to designate
+                               a certain choice of non-linear
+                               parameters, e.g. v001, v002,...)
+            R1val  = e.g. 1  for R=1.40
+            R2val  = e.g. 40 for R=1.40.
+
+      NOTE: The script automatically compiles first the H_2
+            program. The idea behind this change from the original
+            program is to allow for a more automatic storage
+            administration. Using a preprogram, the actual dimensions
+            for the problem are obtained from the input file xxx.dat. 
+
+            However, although the program seems now to work rather 
+            properly for relatively large basis sets (actually, no
+            upper limit were detected yet), there are still problems 
+            when changing the integration parameters and when using
+            very small basis sets!!!
+
+
+  3.) If the program stops with the message:
+      "IDENTICAL TERMS IN WAVEFUNCTION  I  J  K" (where I, J, K are
+      numbers) the input file contains a mistake in the sense that 
+      at least two basis functions are identical. The identical 
+      basis functions are represented by the exponents 
+      \mu,r,s,\bar{r},\bar{s} which, written as a five-digit number 
+      is identical to I (note that starting zeros are omitted). The 
+      numbers (indices) of the identical basis functions are J and K. 
+      Change the xxx.dat fil and start again.
+
+
+  4.) Analyse the result. The first thing to look for is whether 
+      shortly after the start of the program the message
+      "MATRIX DECOMPOSED IS NOT POSITIVE DEFINITE" appears.
+      If this occurs, it means that the orthogonalisation of the 
+      input basis set failed and the chosen basis set is (nearly) 
+      linear dependent, at least within the computer accuracy. 
+      There is a very small range of parameters where one may still 
+      obtain reasonably looking numbers despite that error message, 
+      but those values are certainly not very reliable. It may be 
+      noted that if one reaches that range of (nearly) linear 
+      dependency, it may occur that the result is either not reliable
+      or evidently wrong, although the above-mentioned error message
+      did not occur! Thus be careful when approaching that range.
+
+      It may be, however, that this error is caused by a program error
+      as it may occur if very small basis sets are used (see
+      above). This problem occured already in the original version of
+      the program I got (which was in addition limited to a very small
+      number of basis functions and thus working properly only in a
+      small range of basis-set dimensions).
+
+      If non of the above-mentioned problems occurs, the remaining 
+      output should be the desired result. After a header it will 
+      repeat some of the essential input parameters, as the nuclear
+      charges (Z_1 and Z_2), spin symmetry (SPIN=0(singlet),1(triplet)), 
+      parity (PARITY=0(gerade), 1(ungerade)), number of integration
+      points (INT.P.), maximum number of indices of the auxiliary
+      functions that have been calculated (PMAX, LMAX), the inter-
+      nuclear distance R (in a_0), the non-linear exponents \alpha
+      (A1),  \bar{\alpha} (A2), \beta (B1), \bar{\beta} (B2) that
+      define the basis set (except of the integer exponents), the 
+      real scaling factor (TETA) that should be 1.0 in this case, 
+      the total energy of the lowest-lying state (E in E_h), the 
+      dissociation energy of that state (D in 1/cm) (this value is
+      only correct, if the input parameter SEP.AT. is given correctly
+      in the input file), the potential energy of that state (V in
+      E_h), the change of the energy depending on R (resulting from an 
+      application of the virial theorem) (DE/DR).
+      Then all basis-set coefficients for the lowest-lying state are 
+      stated together with the basis function itself (in the order of
+      the input file xxx.dat). In the case of ground-state
+      optimisations this should help in finding the most important
+      basis functions for the lowest-lying state. Finally, all
+      eigenvalues are listed.
+
+
+      
+
+           Description of the input file xxx.dat:
+           --------------------------------------
+
+1st line (FORMAT I1):  Parameter ITRANS that should be 0 for
+             standard energy computation, and thus in all cases.
+ 
+2nd line (FORMAT 4D15.6,D12.6): Parameters \alpha, \bar{\alpha}, 
+             \beta, \bar{\beta}, and real scaling factor rho.
+             \alpha, \bar{\alpha}, etc. should be chosen by the
+             user, while rho should always be 1.0. Note that 
+             \alpha and \bar{\alpha} have to be larger than 0.0,
+             while \beta and \bar{\beta} may be positive, negative, or
+             zero. 
+
+3rd line (FORMAT D20.10): Internuclear distance R (in a_0).
+
+4th line (FORMAT 3I3): Number of basis functions(NOFTE), parameters NIN and
+             NDEL. The number of basis functions is essential, since 
+             depending on parameter NOFTE the basis functions will be
+             read. An erroneous value of NOFTE typically will result
+             in a program crash, because the program will mix up the 
+             following input. There is of course a (small) change to 
+             obtain some reasonable (but probably unwanted) result. 
+             This is e.g. the case, if one increases the number 
+             of basis functions from 53 to 57, but forgets to change
+             NOFTE accordingly. In such a case the number of line in
+             the input file is still correct, but the program will
+             only use the first 53 basis functions.
+             NIN should always be equal to zero, since otherwise no 
+             integrals will be calculated. NDEL should be either 0 or
+             1 (if it is zero, it will automatically be set to 1).
+             
+Line 5 to N  (where N is either NOFTE/10, if MOD(NOFTE,10)=0, or 
+              N = (NOFTE/10)+1 if MOD(NOFTE,10)<>0).
+        (FORMAT 10(X,I5)): \mu_j, r_j, s_j, \bar{r}_j, \bar{s}_j 
+              defining the basis function j. Up to 10 basis functions
+              are specified per line.
+
+(N+1st) line (FORMAT D15.6,4I1): None of the five parameters is
+              usually used anymore. They are:
+              E (approximate energy of the lowest state, used as
+                 starting point when calculating only the lowest eigenvalue 
+                 and not diagonalising the full Hamiltonian matrix).
+              ITER: probably the number of iterations when calculating
+                 only a single eigenvalue.
+              ICC:  should be 0
+              IWRITE= 0: usual calculation
+                      1: store matrices for a restart
+                      2: use matrices from a previous run
+                         (i.e. perform a restart).
+              IPRKS: (produce some additional output)
+
+(N+2nd) line (FORMAT 2I1): ITRIP = 0(1) for singlet(triplet) calculation.
+                           IPAR  = 0(1) for gerade(ungerade) calculation.
+
+(N+3rd) line (FORMAT 4I3): For the following parameters the default
+           values 60 16 16 500 should be appropriate for most
+           practical purposes. Since the dimensioning of the COMMON
+           blocks depend also on those parameters, changes of them may
+           lead to program errors!
+           LMX: maximum number of terms used in the
+               von-Neumann expansion, i.e. the \Phi integrals are 
+               calculated in the range \Phi_{i,j}^{0..LMX} and the 
+               B integrals in the range B_{j}^{0..LMX}.
+           PMX: maximum index of \Phi_{i,j}^l, i.e.
+               the \Phi integrals are calculated in the range 
+               \Phi_{0..PMX,0..PMX}^{0..LMX}. 
+           KMX: maximum index of the B integral to 
+               be calculated, i.e. the B integrals are calculated in
+               the range B_{0..KMX}^{0..LMX}.
+           MAXPN: number of grid points in numerical integration
+
+(N+4th) line (FORMAT D20.10): Convergence parameter when determining
+               only a single eigenvalue (usually not used anymore).
+
+(N+5th) line (FORMAT D15.6,I1): Parameter SEPAT is the energy of the 
+               lowest state in the separated-atom limit. This value is
+               used together with the obtained energy for the lowest
+               state in order to evaluate the dissociation
+               energy. This parameter does not influence the
+               calculation itself, and thus is not really important
+               (provided one ignores the dissociation energy given in
+               the output).
+               Parameter INPVEC specifies whether a start vector is
+               provided in the input or not. This is only needed when
+               searching one eigenvalue, and thus it is typically not
+               required anymore. Thus use INPVEC=0 (no eigenvector
+               will be provided in the input)
+
+(N+6th) line (FORMAT 5I1):  Some print parameters:
+         IPNCH = 1 write informations into xxx.f10 file,
+         IPR1 > 0 prints the (basic) integrals, (IPR1=2 only a 
+                  subgroup of the integrals).
+         IPR2 > 0 skips the matrix evaluation,
+         IPR3 > 0 skips the matrix diagonalisation,
+         IPRFUN = 1(0) linear coefficients are printed (or not).
+         Default (for most practical purposes): 10000 or 00000
+         (these parameters have probably been introduced by the 
+          authors for checking purposes).
+
+(N+7th) line (FORMAT 2D15.8): Nuclear charges Z_1 and Z_2.
+
+(N+8th) line (FORMAT 5I3): Parameters IOO, IO2, NEGV, NAP, IAP:
+         IOO = 0: perform complete diagonalisation of the Hamiltonian
+                  matrix (should be standard).
+             = 1: calculate only the lowest eigenvalue (good for an
+                  optimisation of the lowest state of a given symmetry).  
+         IO2:     ???
+         NEGV: number of eigenvalues to be stored in a separate file. 
+               (If NEGV = -1: store all eigenvalues).
+         NAP, IAP: see IO2...
+
+(N+9th) line (FORMAT 2I1,D15.5): Three parameters used for an
+          automatic parameter optimisation which I, however, did not 
+          use. 
+
+(N+10th) line (FORMAT 8I3): Eight more parameters that are certainly
+          very interesting, but I do not know for what purpose. The 
+          first parameter was the switch between \Sigma and \Pi
+          symmetry, but this program version can only handle \Sigma
+          states.
+
+(N+11th) line (FORMAT I1): Still another parameter, probably used in
+          the context of automatic parameter optimisation. During the 
+          parameter optimisation it signals whether the parameters are
+          converged or not. 

@@ -1,0 +1,43 @@
+#!/bin/bash
+
+#for file in *; do
+k=`echo 0 `
+aufruf=./hhb501v08bR2_00.erg
+testgr=`head -1 $aufruf | awk '{print $6}'`
+testan=`head -50 $aufruf |grep 'even' |head -2 |tail -1 |awk '{print $6}'`
+
+#echo "$testgr"
+#echo "$testan"
+
+for file in *v*R2_00.erg; do
+
+   k=`echo " $k + 1" | bc `	
+   #echo $file
+
+   #radius=${file/*R/}
+   #radius=${radius/\.*/}
+   #radius=`echo $radius | sed 's/_/\./g'`
+
+   #echo $radius
+
+   energy1=`head -1 $file | awk '{print $6}'`
+   energy2=`head -50 $file| grep 'even' | head -2 | tail -1 | awk '{print $6}'`
+   #echo $energy
+
+   progr=` echo "scale=11 ;  ( $energy1/$testgr - 1 ) * 100 " | bc`
+   proan=` echo "scale=11 ;  ( $energy2/$testan - 1 ) * 100 " | bc`
+   gesab=` echo "scale=11 ;    $progr + $proan " | bc`
+   echo "$file"
+   #echo "$energy1"
+   #echo "$energy2"
+   #echo "$progr"
+   #echo "$proan"
+   echo "$gesab"
+
+done
+   
+   echo "       "
+   echo "Suchlauf Beendet"
+   echo "       "
+
+exit
